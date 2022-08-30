@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.BlackListMapper">
+	<select id="loadCountByIdNumber" resultType="java.lang.Long">
+		select count(1) from decision_black_list where id_number = #{idNumber} and `status` = 1
+	</select>
+
+	<insert id="batchInsertBlackList">
+		INSERT INTO decision_black_list (
+		name,
+		id_number,
+		mobile,
+		status,
+		create_time
+		)
+		VALUES
+		<foreach collection="blackLists" item="blackList" separator=",">
+			(#{blackList.name}, #{blackList.idNumber}, #{blackList.mobile}, '1',now())
+		</foreach>
+	</insert>
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.free.decision.server.mapper.CustomerInfoMapper">
+
+    <insert id="insert" useGeneratedKeys="true" parameterType="com.free.decision.server.model.CustomerInfo" keyProperty="id">
+		insert into decision_customer_info
+		(company_id,id_number,phone,`name`,id_address,register_time,create_time)
+		values
+		 (#{companyId}, #{idNumber}, #{phone}, #{name}, #{idAddress}, #{registerTime}, now())
+	</insert>
+
+	<update id="logicDeleteByIdNumber">
+		update decision_customer_info set `status` = 0,update_time = now()  where id_number = #{idNumber} and company_id = #{companyId} and `status` = 1
+	</update>
+
+	<select id="loadCountByIdNumber" resultType="java.lang.Long">
+		select count(1) from decision_customer_info where id_number = #{idNumber} and company_id = #{companyId}  and `status` = 1
+	</select>
+
+	<select id="loadIdByIdNumber" resultType="java.lang.Long">
+		select id from decision_customer_info where id_number = #{idNumber} and company_id = #{companyId}  and `status` = 1
+	</select>
+
+    <select id="loadByIdNumber" resultType="com.free.decision.server.model.CustomerInfo">
+        select id,id_number as idNumber,phone,`name`,id_address as idAddress from decision_customer_info
+        where id_number = #{idNumber} and company_id = #{companyId}  and `status` = 1 limit 1
+    </select>
+
+	<select id="getCustomerIdsByIdNumber" resultType="java.lang.Long">
+		select id from decision_customer_info where id_number = #{idNumber} and `status` = 1
+	</select>
+</mapper>

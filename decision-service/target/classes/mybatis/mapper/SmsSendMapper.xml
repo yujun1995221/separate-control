@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.SmsSendMapper">
+
+    <insert id="insert" parameterType="com.free.decision.server.model.SmsSend">
+        insert into decision_sms_send (`status`,mobile,content,`count`,`type`,params,bench_id,ip,ret,create_time,channel)
+        values (#{status}, #{mobile}, #{content},#{count},#{type}, #{params}, #{benchId},#{ip}, #{ret}, now(),#{channel})
+    </insert>
+
+    <select id="getLastDayMsg" resultType="java.lang.Long">
+        SELECT COUNT(0) from decision_sms_send where  mobile = #{mobile}  and create_time > DATE_SUB(#{date}, INTERVAL 24 HOUR) and `type` = 1 and channel = #{channel}
+    </select>
+
+    <select id="getLastHourMsg" resultType="java.lang.Long">
+        SELECT COUNT(0) from decision_sms_send where  mobile = #{mobile}  and create_time > DATE_SUB(#{date}, INTERVAL 1 HOUR) and `type` = 1  and channel = #{channel}
+    </select>
+
+</mapper>

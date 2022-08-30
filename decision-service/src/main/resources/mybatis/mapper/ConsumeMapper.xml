@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.ConsumeMapper">
+
+    <sql id="Base_Column_List">
+       id,create_time as createTime,description,amount,`type`,report_type as reportType,company_id as companyId
+    </sql>
+
+    <select id="getPageData" resultType="com.free.decision.server.model.Consume">
+          select <include refid="Base_Column_List" />
+          from decision_consume_record
+          where 1=1
+          <if test="companyId != null and companyId > 0">
+            and company_id = #{companyId}
+          </if>
+          <if test="createTimeStart != null and createTimeStart != ''">
+              and DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%S') >= #{createTimeStart}
+          </if>
+          <if test="createTimeEnd != null and createTimeEnd != ''">
+              and DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%S') &lt;= #{createTimeEnd}
+           </if>
+          <if test="type != null">
+              and type = #{type}
+          </if>
+          order by id desc
+    </select>
+
+    <insert id="addConsume" parameterType="com.free.decision.server.model.Consume">
+        insert into decision_consume_record (company_id,report_type,amount,type,description,create_time)
+        values (#{companyId},#{reportType},#{amount},#{type},#{description},now())
+    </insert>
+</mapper>

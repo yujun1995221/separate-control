@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.ZmxyConfigMapper">
+  <resultMap id="BaseResultMap" type="com.free.decision.server.model.ZmxyConfig">
+    <id     column="id"               jdbcType="BIGINT"    property="id" />
+    <result column="code"             jdbcType="VARCHAR"   property="code" />
+    <result column="status"           jdbcType="INTEGER"   property="status" />
+    <result column="zmxy_score"       jdbcType="INTEGER"   property="zmxyScore" />
+    <result column="anti_fraud_score" jdbcType="INTEGER"   property="antiFraudScore" />
+    <result column="area_id"          jdbcType="INTEGER"   property="areaId" />
+    <result column="is_open"          jdbcType="INTEGER"   property="isOpen" />
+    <result column="create_time"      jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time"      jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, code, status, zmxy_score, anti_fraud_score, area_id, is_open, create_time, update_time
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from decision_zmxy_config where `status` = 1 and id = #{id}
+  </select>
+
+  <select id="getAllZmxyConfig" resultType="com.free.decision.server.model.ZmxyConfig">
+    select
+    a.id, a.`code`, a.`status`,
+    IFNULL(b.zmxy_score,a.zmxy_score) as zmxyScore,
+    IFNULL(b.anti_fraud_score,a.anti_fraud_score)as antiFraudScore,
+    a.area_id, IFNULL(b.is_open,a.is_open) as isOpen,c.`name` as area,
+    a.create_time as createTime, a.update_time as updateTime
+    from decision_zmxy_config a
+    left join decision_zmxy_config_company b on a.id = b.config_id and b.company_id=#{companyId}
+    left join decision_zmxy_area_dic c on a.area_id = c.id
+    where a.`status` = 1 order by id
+  </select>
+
+  <select id="getZmxyScore" resultType="com.free.decision.server.model.vo.DecisonZmxyConfigVO">
+    select IFNULL(b.zmxy_score,a.zmxy_score) as score,a.`code` from decision_zmxy_config a
+      left join decision_zmxy_config_company b on a.id = b.config_id and b.company_id=#{companyId} and b.`status`=1
+      left join decision_zmxy_area_dic c on a.area_id = c.id WHERE c.`name` = #{province} and IFNULL(b.is_open,a.is_open) = 1 and a.`status`=1
+  </select>
+
+</mapper>

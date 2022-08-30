@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.DecisionMapper">
+
+    <sql id="Base_Column_List">
+
+    </sql>
+
+    <select id="loadByDecisionCount" resultType="java.lang.Integer">
+        select count(1)from decision_record a
+        where a.company_id =#{companyId} and a.status = 2 and datediff(a.create_time,now()) = 0
+    </select>
+
+    <select id="loadByDecisionHitNewCount" resultType="com.free.decision.server.model.vo.DecisionTypeVO">
+        select count(1) as count,a.group from decision_hit_record a
+        where a.company_id = #{companyId}  and a.type =1
+        <if test="(createTimeStart == null or createTimeStart == '') and (createTimeEnd == null or createTimeEnd =='')">
+            and datediff(a.create_time,now()) = 0
+        </if>
+        <if test="createTimeStart != null and createTimeStart != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') >= #{createTimeStart}
+        </if>
+        <if test="createTimeEnd != null and createTimeEnd != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') &lt;= #{createTimeEnd}
+        </if>
+        group by a.group
+    </select>
+
+    <select id="loadByDecisionHitReCount" resultType="com.free.decision.server.model.vo.DecisionTypeVO">
+        select count(1) as count,a.group from decision_hit_record a
+        where a.company_id = #{companyId}  and a.type =2
+        <if test="(createTimeStart == null or createTimeStart == '') and (createTimeEnd == null or createTimeEnd =='')">
+            and datediff(a.create_time,now()) = 0
+        </if>
+        <if test="createTimeStart != null and createTimeStart != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') >= #{createTimeStart}
+        </if>
+        <if test="createTimeEnd != null and createTimeEnd != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') &lt;= #{createTimeEnd}
+        </if>
+        group by a.group
+    </select>
+
+    <select id="loadByDecisionAllCount" resultType="com.free.decision.server.model.vo.HitRecordVO">
+        select count(1) as count,a.type,a.group,a.code from  decision_hit_record a
+        where a.company_id= #{companyId}
+            <if test="group != null">
+              and a.group = #{group}
+            </if>
+            <if test="type != null">
+              and a.type = #{type}
+            </if>
+            <if test="(createTimeStart == null or createTimeStart == '') and (createTimeEnd == null or createTimeEnd =='')">
+              and datediff(a.create_time,now()) = 0
+            </if>
+            <if test="createTimeStart != null and createTimeStart != ''">
+              and DATE_FORMAT(a.create_time, '%Y-%m-%d') >= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+              and DATE_FORMAT(a.create_time, '%Y-%m-%d') &lt;= #{createTimeEnd}
+            </if>
+        group by a.type,a.group,a.code
+    </select>
+
+
+    <select id="loadByCount" resultType="com.free.decision.server.model.vo.DecisionRecordCountVO">
+        select count(1) as count,a.type,a.result_type as resultType from decision_record a
+        where a.company_id = #{companyId} and a.status = 2
+        <if test="(createTimeStart == null or createTimeStart == '') and (createTimeEnd == null or createTimeEnd =='')">
+            and datediff(a.create_time,now()) = 0
+        </if>
+        <if test="createTimeStart != null and createTimeStart != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') >= #{createTimeStart}
+        </if>
+        <if test="createTimeEnd != null and createTimeEnd != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d') &lt;= #{createTimeEnd}
+        </if>
+        group by a.type,a.result_type
+    </select>
+
+</mapper>

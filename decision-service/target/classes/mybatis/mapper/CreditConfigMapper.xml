@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.CreditConfigMapper">
+  <resultMap id="BaseResultMap" type="com.free.decision.server.model.CreditConfig">
+    <id     column="id"                      jdbcType="BIGINT"    property="id" />
+    <result column="code"                    jdbcType="VARCHAR"   property="code" />
+    <result column="name"                    jdbcType="VARCHAR"   property="name" />
+    <result column="description"             jdbcType="VARCHAR"   property="description" />
+    <result column="status"                  jdbcType="INTEGER"   property="status" />
+    <result column="type"                    jdbcType="INTEGER"   property="type" />
+    <result column="is_open"                 jdbcType="INTEGER"   property="isOpen" />
+    <result column="is_show"                 jdbcType="INTEGER"   property="isShow" />
+    <result column="val"                     jdbcType="VARCHAR"   property="val" />
+    <result column="create_time"             jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time"             jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, `code`,`name`,`description`, `status`, `type`, is_open, is_show, val, create_time, update_time
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from decision_credit_config
+    where `status` = 1 and id = #{id}
+  </select>
+
+  <select id="getAllCreditConfig" resultMap="BaseResultMap">
+    select a.id,a.`code`,a.`name`,a.description,a.`status`,a.type,IFNULL(b.is_open,a.is_open) as is_open,
+    a.is_show,IFNULL(b.val,a.val) as val,a.create_time,a.update_time from decision_credit_config a
+    left join decision_credit_config_company b  on a.id = b.config_id and b.company_id=#{companyId}
+    where a.type = #{type} and a.is_show = 1 and a.`status` = 1 order by id
+  </select>
+
+  <select id="getCompanyConfig" resultType="com.free.decision.server.model.vo.DecisionCreditConfigVO">
+    select a.`code`,IFNULL(b.val,a.val) as val from decision_credit_config a
+      left join decision_credit_config_company b on a.id = b.config_id and b.company_id=#{companyId} and b.status=1
+    where IFNULL(b.is_open,a.is_open) = 1 and (a.type=#{type} or type = 3) and a.status=1
+  </select>
+
+</mapper>

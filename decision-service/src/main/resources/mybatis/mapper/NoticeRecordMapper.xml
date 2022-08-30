@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.NoticeRecordMapper">
+
+    <select id="getNeedSendNoticeId" resultType="java.lang.Long">
+        select id from decision_notice_record where flag = 0 and times &lt;= #{times} order by id
+    </select>
+    <select id="getNoticeById" resultType="com.free.decision.server.model.NoticeRecord">
+        select id, url, result,report_type reportType from decision_notice_record where id = #{id} and flag = 0 and times &lt;= #{times}
+    </select>
+
+    <update id="updateSuccess" parameterType="com.free.decision.server.model.NoticeRecord">
+        update decision_notice_record set flag = 1 where id = #{id}
+    </update>
+
+    <update id="updateTimes" parameterType="com.free.decision.server.model.NoticeRecord">
+        update decision_notice_record set times = times+1 where id = #{id}
+    </update>
+
+    <update id="insertRecord" parameterType="com.free.decision.server.model.NoticeRecord">
+        insert into decision_notice_record (report_type, url, result, times, flag, create_time) values (#{reportType},#{url},#{result},0,0,now())
+    </update>
+</mapper>

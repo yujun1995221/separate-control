@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.UdMapper">
+
+  <resultMap type="com.free.decision.server.model.vo.DecisionUdReportVO" id="decisionUdReportVOMaps">
+    <result column="id" property="id"/>
+    <result column="score" property="riskScore"/>
+    <result column="loan_platform_count" property="loanPlatformCount"/>
+    <result column="repayment_times_count" property="repaymentTimesCount"/>
+    <result column="actual_loan_platform_count" property="actualLoanPlatformCount"/>
+    <result column="actual_loan_platform_count_1m" property="actualLoanPlatformCount1m"/>
+    <result column="loan_platform_count_1m" property="loanPlatformCount1m"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
+
+    <select id="getLastUdDecisionData" resultMap="decisionUdReportVOMaps">
+        select id,score,loan_platform_count,repayment_times_count,actual_loan_platform_count,
+        actual_loan_platform_count_1m,loan_platform_count_1m,create_time from decision_ud_credit where user_id = #{userId} order by id desc limit 1
+    </select>
+
+    <select id="getDeviceUseCount" resultType="java.lang.Integer">
+        select device_link_id_count from decision_ud_credit_devices where ud_credit_id = #{udCreditId}
+    </select>
+
+    <!--  插入 有盾云慧眼关联信息 -->
+    <insert id="insertUdCredit" parameterType="com.free.decision.server.model.UdCredit" useGeneratedKeys="true" keyProperty="id">
+    insert into decision_ud_credit (code, user_id,
+      last_modified_time, birthday, address,`names`, gender, nation,
+      province, city, issuing_agency,id_number_mask, name_credible, mobile_count,
+      link_user_count, other_link_device_count, partner_mark_count,
+      court_dishonest_count, online_dishonest_count,
+      living_attack_count, user_have_bankcard_count,
+      other_fraud_device_count, other_living_attack_device_count,
+      partner_user_count, bankcard_count, fraud_device_count,
+      living_attack_device_count, link_device_count,
+      actual_loan_platform_count, actual_loan_platform_count_1m,
+      actual_loan_platform_count_3m, actual_loan_platform_count_6m,
+      loan_platform_count, repayment_times_count,
+      repayment_platform_count, loan_platform_count_1m,
+      loan_platform_count_3m, loan_platform_count_6m,
+      repayment_platform_count_1m, repayment_platform_count_3m,
+      repayment_platform_count_6m, score, risk_evaluation,create_time)
+    values (#{code,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT},
+      #{lastModifiedTime}, #{birthday,jdbcType=DATE}, #{address,jdbcType=VARCHAR},
+      #{names,jdbcType=VARCHAR}, #{gender,jdbcType=VARCHAR}, #{nation,jdbcType=VARCHAR},
+      #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, #{issuingAgency,jdbcType=VARCHAR},
+      #{idNumberMask,jdbcType=VARCHAR}, #{nameCredible,jdbcType=VARCHAR}, #{mobileCount,jdbcType=INTEGER},
+      #{linkUserCount,jdbcType=INTEGER}, #{otherLinkDeviceCount,jdbcType=INTEGER}, #{partnerMarkCount,jdbcType=INTEGER},
+      #{courtDishonestCount,jdbcType=INTEGER}, #{onlineDishonestCount,jdbcType=INTEGER},
+      #{livingAttackCount,jdbcType=INTEGER}, #{userHaveBankcardCount,jdbcType=INTEGER},
+      #{otherFraudDeviceCount,jdbcType=INTEGER}, #{otherLivingAttackDeviceCount,jdbcType=INTEGER},
+      #{partnerUserCount,jdbcType=INTEGER}, #{bankcardCount,jdbcType=INTEGER}, #{fraudDeviceCount,jdbcType=INTEGER},
+      #{livingAttackDeviceCount,jdbcType=INTEGER}, #{linkDeviceCount,jdbcType=INTEGER},
+      #{actualLoanPlatformCount,jdbcType=INTEGER}, #{actualLoanPlatformCount1m,jdbcType=INTEGER},
+      #{actualLoanPlatformCount3m,jdbcType=INTEGER}, #{actualLoanPlatformCount6m,jdbcType=INTEGER},
+      #{loanPlatformCount,jdbcType=INTEGER}, #{repaymentTimesCount,jdbcType=INTEGER},
+      #{repaymentPlatformCount,jdbcType=INTEGER}, #{loanPlatformCount1m,jdbcType=INTEGER},
+      #{loanPlatformCount3m,jdbcType=INTEGER}, #{loanPlatformCount6m,jdbcType=INTEGER},
+      #{repaymentPlatformCount1m,jdbcType=INTEGER}, #{repaymentPlatformCount3m,jdbcType=INTEGER},
+      #{repaymentPlatformCount6m,jdbcType=INTEGER}, #{score,jdbcType=INTEGER}, #{riskEvaluation,jdbcType=VARCHAR},#{createTime})
+  </insert>
+
+  <!-- 插入 关联设备信息 -->
+  <insert id="insertUdCreditDevices" parameterType="com.free.decision.server.model.UdCreditDevices" >
+    insert into decision_ud_credit_devices (ud_credit_id, device_name,
+      device_id, device_last_use_date, device_link_id_count,cheats_device, is_rooted, fraud_device,
+      is_using_proxy_port, app_instalment_count, network_type,living_attack)
+    values
+    <foreach collection="udCreditDevicesList" item="list" separator=",">
+    (#{list.udCreditId,jdbcType=BIGINT}, #{list.deviceName,jdbcType=VARCHAR},
+      #{list.deviceId,jdbcType=VARCHAR}, #{list.deviceLastUseDate,jdbcType=DATE}, #{list.deviceLinkIdCount,jdbcType=INTEGER},
+      #{list.cheatsDevice,jdbcType=TINYINT}, #{list.isRooted,jdbcType=TINYINT}, #{list.fraudDevice,jdbcType=TINYINT},
+      #{list.isUsingProxyPort,jdbcType=TINYINT}, #{list.appInstalmentCount,jdbcType=INTEGER}, #{list.networkType,jdbcType=VARCHAR},
+      #{list.livingAttack,jdbcType=TINYINT})
+    </foreach>
+  </insert>
+
+  <!-- 插入 借款还款信息 -->
+  <insert id="insertUdCreditLoanIndustry" parameterType="com.free.decision.server.model.UdCreditLoanIndustry" >
+    insert into decision_ud_credit_loan_industry (ud_credit_id, actual_loan_platform_count,
+      `name`, loan_platform_count, repayment_times_count, repayment_platform_count, create_time)
+    values
+    <foreach collection="udCreditLoanIndustryList" item="list" separator=",">
+    (#{list.udCreditId,jdbcType=BIGINT}, #{list.actualLoanPlatformCount,jdbcType=INTEGER},
+      #{list.name,jdbcType=VARCHAR}, #{list.loanPlatformCount,jdbcType=INTEGER}, #{list.repaymentTimesCount,jdbcType=INTEGER},
+      #{list.repaymentPlatformCount,jdbcType=INTEGER}, now())
+    </foreach>
+  </insert>
+
+  <!-- 插入 反欺诈报告用户特征信息 -->
+  <insert id="insertUdCreditUserFeature" >
+    insert into decision_ud_credit_user_feature (ud_credit_id, feature_type,last_modified_date, create_time) values
+    <foreach collection="udCreditUserFeatureList" item="list" separator=",">
+    (#{list.udCreditId}, #{list.featureType},#{list.lastModifiedDate}, now())
+    </foreach>
+  </insert>
+
+  <!-- 插入 记录信息  -->
+  <insert id="insertUdRecord" parameterType="com.free.decision.server.model.UdRecord" useGeneratedKeys="true" keyProperty="id">
+    insert into decision_ud_record (company_id, request_params, `type`, result,create_time,user_id )
+      values(#{companyId,jdbcType=BIGINT}, #{requestParams,jdbcType=LONGVARCHAR}, #{type,jdbcType=TINYINT},#{result,jdbcType=LONGVARCHAR}, now(),#{userId})
+  </insert>
+
+  <select id="getUdRecordResultById" resultType="java.lang.String" >
+    select result from decision_ud_record where id = #{id}
+  </select>
+
+</mapper>

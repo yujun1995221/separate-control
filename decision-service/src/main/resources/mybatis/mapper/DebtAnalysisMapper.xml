@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.DebtAnalysisMapper">
+
+    <sql id="Page_Column_List">
+        id as id,company_name as companyName, app_name as appName, example_name as exampleName,user_name as userName,create_time  as createTime,init_status as initStatus,address,
+        back_address as backAddress,front_address as frontAddress,port,password,mobile
+    </sql>
+
+    <select id="getAllDataSource" resultType="com.free.decision.server.model.CreditCompany">
+        SELECT <include refid="Page_Column_List"/> from credit_company where status = 1
+    </select>
+
+    <insert id="batchInsertOrderRecordTemp">
+        insert into decision_order_record_temp(finance_status, order_create_time, create_time, company_flag, id_number, order_status, cut_time, overdue_time, first_lend) values
+        <foreach collection="orderRecordList" item="orderRecord" separator=",">
+            (#{orderRecord.financeStatus}, #{orderRecord.orderCreateTime}, now(), #{orderRecord.companyFlag}, #{orderRecord.idNumber}, #{orderRecord.orderStatus}, #{orderRecord.cutTime}, #{orderRecord.overdueTime}, #{orderRecord.firstLend})
+        </foreach>
+    </insert>
+
+    <insert id="batchInsertCustomerRecordTemp">
+        insert into decision_customer_record_temp(id_number, customer_create_time, company_flag, create_time) values
+        <foreach collection="customerRecordList" item="customerRecord" separator=",">
+            (#{customerRecord.idNumber}, #{customerRecord.customerCreateTime}, #{customerRecord.companyFlag}, now())
+        </foreach>
+    </insert>
+
+    <update id="dropOrderTempTable">
+        DROP TABLE IF EXISTS `decision_order_record_temp`
+    </update>
+
+    <update id="dropCustomerTempTable">
+        DROP TABLE IF EXISTS `decision_customer_record_temp`
+    </update>
+
+    <update id="createCustomerTempTable">
+        CREATE TABLE `decision_customer_record_temp` (
+          `id` bigint(20) NOT NULL AUTO_INCREMENT,
+          `id_number` char(50) NOT NULL COMMENT '用户ID',
+          `customer_create_time` datetime NOT NULL COMMENT '用户注册时间',
+          `create_time` datetime NOT NULL,
+          `company_flag` bigint(20) NOT NULL,
+          PRIMARY KEY (`id`),
+          KEY `decision_idnumber_customer` (`id_number`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=402221 DEFAULT CHARSET=utf8mb4
+    </update>
+
+    <update id="createOrderTempTable">
+        CREATE TABLE `decision_order_record_temp` (
+          `id` bigint(20) NOT NULL AUTO_INCREMENT,
+          `finance_status` tinyint(2) NOT NULL COMMENT '财务状态1：未放款 2：放款中 3：已放款  4：已还款 5：代发失败 6：还款中',
+          `order_create_time` datetime NOT NULL COMMENT '订单创建时间',
+          `create_time` datetime NOT NULL,
+          `company_flag` bigint(20) NOT NULL COMMENT '公司标识',
+          `id_number` char(50) NOT NULL COMMENT '用户身份证号',
+          `order_status` tinyint(2) NOT NULL COMMENT '订单状态',
+          `cut_time` datetime DEFAULT NULL COMMENT '实际还款时间',
+          `overdue_time` datetime DEFAULT NULL COMMENT '订单还款截止时间',
+          `first_lend` tinyint(2) DEFAULT NULL COMMENT '1:首贷 2:复贷',
+          PRIMARY KEY (`id`),
+          KEY `decision_index_idnum` (`id_number`),
+          KEY `decision_idnumber_idx` (`id_number`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=540637 DEFAULT CHARSET=utf8mb4
+    </update>
+
+    <update id="dropOrderTable">
+        DROP TABLE IF EXISTS decision_order_record
+    </update>
+
+    <update id="renameOrderTempTable">
+        ALTER TABLE decision_order_record_temp RENAME TO decision_order_record
+    </update>
+
+    <update id="dropCustomerTable">
+        DROP TABLE IF EXISTS decision_customer_record
+    </update>
+
+    <update id="renameCustomerTempTable">
+        ALTER TABLE decision_customer_record_temp RENAME TO decision_customer_record
+    </update>
+
+
+    <select id="getLiabilitiesReport" resultType="com.free.decision.server.model.LiabilitiesParam">
+         SELECT
+
+    (SELECT COUNT(*) FROM  decision_customer_record WHERE id_number = a.id_number) AS totalRegistration,
+    (SELECT COUNT(*) FROM  decision_customer_record WHERE id_number = a.id_number AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= customer_create_time ) AS weekRegistration,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number) AS totalApplications,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND first_lend = 1 ) AS totalFirApplications,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND first_lend = 2 ) AS totalReApplications,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekApplications,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND first_lend = 1 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekFirApplications,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND first_lend = 2 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekReApplications,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3) AS totalRejectNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3 AND first_lend = 1) AS totalFirRejectNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3 AND first_lend = 2) AS totalReRejectNumber,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekRejectNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3 AND first_lend = 1 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekFirRejectNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 3 AND first_lend = 2 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekReRejectNumber,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4) AS totalPassNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4 AND first_lend = 1) AS totalFirPassNnmber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4 AND first_lend = 2) AS totalRePassNumber,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekPassNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4 AND first_lend = 1 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekFirPassNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND order_status = 4 AND first_lend = 2 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekRePassNumber,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND finance_status = 4 ) AS totalSuccessNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND finance_status = 4 AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time) AS weekSuccessNumber,
+    (SELECT COUNT(*) FROM decision_order_record WHERE ((cut_time IS NULL AND overdue_time &lt; NOW()) OR (cut_time IS NOT NULL AND cut_time &gt; overdue_time)) AND id_number = #{idNumber}) AS overdueNumber,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = #{idNumber} AND DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= order_create_time AND ((cut_time IS NULL AND overdue_time &lt; NOW()) OR (cut_time IS NOT NULL AND cut_time &gt; overdue_time))) AS weekOverdueNumber,
+    (SELECT IF(COUNT(*)&gt;0,'是','否') FROM (SELECT overdue_time,cut_time,order_create_time FROM decision_order_record WHERE id_number = #{idNumber} AND overdue_time IS NOT NULL) a
+    WHERE (cut_time IS NULL AND overdue_time &lt; NOW())) AS overdueLessTwo,
+
+    (SELECT COUNT(*) FROM decision_order_record WHERE id_number = a.id_number AND finance_status IN (3,6,7)) AS noRepaymentNumber,
+
+    (SELECT COUNT(*) FROM (SELECT DATE_FORMAT(overdue_time, "%Y-%m-%d"),COUNT(*) AS num FROM decision_order_record WHERE id_number = #{idNumber}  AND cut_time IS NULL  AND overdue_time IS NOT NULL
+     GROUP BY DATE_FORMAT(overdue_time, "%Y-%m-%d")) a  WHERE a.num =3) AS dayExpireThreeNumber,
+    (SELECT COUNT(*) FROM (SELECT DATE_FORMAT(overdue_time, "%Y-%m-%d"),COUNT(*) AS num FROM decision_order_record WHERE id_number = #{idNumber}  AND cut_time IS NULL  AND overdue_time IS NOT NULL
+     GROUP BY DATE_FORMAT(overdue_time, "%Y-%m-%d")) a  WHERE a.num =4) AS dayExpireFourNumber,
+    (SELECT COUNT(*) FROM (SELECT DATE_FORMAT(overdue_time, "%Y-%m-%d"),COUNT(*) AS num FROM decision_order_record WHERE id_number = #{idNumber}  AND cut_time IS NULL  AND overdue_time IS NOT NULL
+     GROUP BY DATE_FORMAT(overdue_time, "%Y-%m-%d")) a  WHERE a.num =5) AS dayExpireFiveNumber,
+     (SELECT COUNT(*) FROM (SELECT DATE_FORMAT(overdue_time, "%Y-%m-%d"),COUNT(*) AS num FROM decision_order_record WHERE id_number = #{idNumber}  AND cut_time IS NULL  AND overdue_time IS NOT NULL
+     GROUP BY DATE_FORMAT(overdue_time, "%Y-%m-%d")) a  WHERE a.num =6) AS dayExpireSixNumber,
+     (SELECT COUNT(*) FROM (SELECT DATE_FORMAT(overdue_time, "%Y-%m-%d"),COUNT(*) AS num FROM decision_order_record WHERE id_number = #{idNumber}  AND cut_time IS NULL  AND overdue_time IS NOT NULL
+     GROUP BY DATE_FORMAT(overdue_time, "%Y-%m-%d")) a  WHERE a.num &gt;=7) AS dayExpireSevenNumber,
+
+    (SELECT MAX(order_create_time) FROM decision_order_record  WHERE id_number = a.id_number) AS lastApplicationsTime,
+    (SELECT MIN(order_create_time) FROM decision_order_record  WHERE id_number = a.id_number) AS firApplicationsTime
+    FROM decision_order_record a WHERE a.id_number =#{idNumber}
+    GROUP BY a.id_number
+
+
+    </select>
+
+    <select id="getNumExpire" resultType="java.lang.Integer">
+        SELECT
+        	MAX(num)
+        FROM
+        	(
+        		SELECT
+        			count(1) AS num
+        		FROM
+        			decision_order_record
+        		WHERE
+        			id_number = #{idNumber}
+        		AND cut_time IS NULL
+        		AND overdue_time IS NOT NULL
+        		GROUP BY
+        			DATE_FORMAT(overdue_time, "%Y-%m-%d")
+        	) t
+    </select>
+
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.DecisionRecordMapper">
+    
+    <insert id="add" parameterType="com.free.decision.server.model.DecisionRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into decision_record(user_id,company_id,`status`, `name`,id_number,phone,`type`,sesame_score,phone_list,mobile_channel,extend,result,result_type,create_time)
+                values (#{userId},#{companyId},#{status},#{name},#{idNumber},#{phone},#{type},#{sesameScore},#{phoneList},#{mobileChannel},#{extend},#{result},#{resultType},now())
+    </insert>
+
+    <update id="update" parameterType="com.free.decision.server.model.DecisionRecord">
+        update decision_record
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="status != null">
+                `status` = #{status},
+            </if>
+            <if test="name != null and name!=''">
+                `name` = #{name},
+            </if>
+            <if test="idNumber != null and idNumber!=''">
+                id_number = #{idNumber},
+            </if>
+            <if test="phone != null and phone!=''">
+                phone = #{phone},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="sesameScore != null">
+                sesame_score = #{sesameScore},
+            </if>
+            <if test="phoneList != null and phoneList!=''">
+                phone_list = #{phoneList},
+            </if>
+            <if test="mobileChannel != null">
+                mobile_channel = #{mobileChannel},
+            </if>
+            <if test="extend != null and extend!=''">
+                extend = #{extend},
+            </if>
+            <if test="result != null and result!=''">
+                result = #{result},
+            </if>
+            <if test="resultType != null">
+                result_type = #{resultType},
+            </if>
+            update_time=now()
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--启动项设置为 trace，加载 springboot 启动内部各种详细输出-->
+<Configuration status="trace">
+    <Appenders>
+        <!--添加一个控制台追加器-->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout>
+                <pattern>[%-5p] %d %c - %m%n</pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!--设置druid日志level为debug-->
+        <Logger name="druid" level="debug" additivity="false">
+            <AppenderRef ref="sql"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.free" level="debug" />
+        <!--根记录全部输出到控制台上-->
+        <Root level="error">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

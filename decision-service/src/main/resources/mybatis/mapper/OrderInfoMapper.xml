@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.free.decision.server.mapper.OrderInfoMapper">
+
+	<insert id="addOrderInfo" useGeneratedKeys="true" parameterType="com.free.decision.server.model.OrderInfo" keyProperty="id">
+		insert into decision_order_info
+		(customer_id, `company_id`, `order_number`, `sell_price`, `rent_period`, `loan_date`, apply_time,
+		`overdue_date`, `cut_real_money`, `repayment_date`, order_status,`finance_status`, `persist_flag`, `persist_count`,
+		`equipment_name`, `equipment_number`, `lend_status`, `create_time`)
+		values
+		 (#{customerId}, #{companyId},  #{orderNumber}, #{sellPrice},#{rentPeriod}, #{loanDate}, #{applyTime},
+		 #{overdueDate},#{cutRealMoney},#{repaymentDate}, #{orderStatus}, #{financeStatus},#{persistFlag},#{persistCount},
+		 #{equipmentName},#{equipmentNumber},#{lendStatus}, now())
+	</insert>
+
+	<update id="logicDeleteByCustomerId" parameterType="java.lang.Long">
+		update decision_order_info set `status` = 0,update_time = now()  where customer_id = #{customerId};
+	</update>
+
+	<update id="update" parameterType="com.free.decision.server.model.OrderInfo">
+		update decision_order_info set
+			sell_price = #{sellPrice},
+			rent_period = #{rentPeriod},
+			loan_date = #{loanDate},
+			apply_time = #{applyTime},
+			overdue_date = #{overdueDate},
+			cut_real_money = #{cutRealMoney},
+			repayment_date = #{repaymentDate},
+			order_status = #{orderStatus},
+			finance_status = #{financeStatus},
+			persist_flag = #{persistFlag},
+			persist_count = #{persistCount},
+			equipment_name = #{equipmentName},
+			equipment_number = #{equipmentNumber},
+			lend_status = #{lendStatus},
+			update_time = now()
+		where order_number = #{orderNumber} and `status` = 1
+	</update>
+
+	<select id="loadCountByOrderNumber" parameterType="java.lang.String" resultType="java.lang.Long">
+		select count(1) from decision_order_info where order_number = #{orderNumber} and `status` = 1
+	</select>
+
+	<select id="getLiabilityOrderInfo" resultType="com.free.decision.server.model.vo.LiabilityDataVO$LiabilityOrderInfo" parameterType="java.lang.Long">
+		select sell_price as sellPrice,rent_period as rentPeriod,loan_date as loanDate,overdue_date as overdueDate,
+		cut_real_money as cutRealMoney,repayment_date as repaymentDate,finance_status as financeStatus,
+		persist_flag as persistFlag,persist_count as persistCount,equipment_name as equipmentName,
+		equipment_number as equipmentNumber,apply_time as applyTime from decision_order_info where customer_id in
+		<foreach collection="customerIds" item="customerId" separator="," open="(" close=")">
+			#{customerId}
+		</foreach>
+		and finance_status in (3,4) and `status` = 1
+	</select>
+
+	<select id="loadCountByPersistNumber" resultType="java.lang.Long">
+        select count(1) from decision_persist_order_info where persist_number = #{persistNumber} and order_number = #{orderNumber} and customer_id = #{customerId} and `status` = 1
+    </select>
+
+	<insert id="addPersistOrder" parameterType="com.free.decision.server.model.vo.PersistOrderInfoVO">
+        insert into decision_persist_order_info (order_number,persist_number,customer_id,status,main_order_overdue_time,
+        persist_time,create_time) values (#{orderNumber}, #{persistNumber}, #{customerId}, 1, #{mainOrderOverdueTime}, #{persistTime}, now());
+    </insert>
+
+	<update id="logicDeletePersistOrderByCustomerId" parameterType="java.lang.Long">
+        update decision_persist_order_info set status = 0 where customer_id = #{customerId} and status = 1
+    </update>
+</mapper>

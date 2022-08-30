@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.XyMapper">
+    <resultMap id="BaseResultMap" type="com.free.decision.server.model.XyActionRadar">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <id column="user_id" jdbcType="BIGINT" property="userId"/>
+        <id column="id_no" jdbcType="CHAR" property="idNo"/>
+        <id column="name" jdbcType="VARCHAR" property="name"/>
+        <id column="versions" jdbcType="VARCHAR" property="versions"/>
+        <id column="loans_score" jdbcType="INTEGER" property="loansScore"/>
+        <id column="loans_credibility" jdbcType="INTEGER" property="loansCredibility"/>
+        <id column="loans_count" jdbcType="INTEGER" property="loansCount"/>
+        <id column="loans_settle_count" jdbcType="INTEGER" property="loansSettleCount"/>
+        <id column="loans_overdue_count" jdbcType="INTEGER" property="loansOverdueCount"/>
+        <id column="loans_org_count" jdbcType="INTEGER" property="loansOrgCount"/>
+        <id column="loans_cash_count" jdbcType="INTEGER" property="loansCashCount"/>
+        <id column="latest_one_month" jdbcType="INTEGER" property="latestOneMonth"/>
+        <id column="latest_three_month" jdbcType="INTEGER" property="latestThreeMonth"/>
+        <id column="latest_six_month" jdbcType="INTEGER" property="latestSixMonth"/>
+        <id column="history_suc_fee" jdbcType="INTEGER" property="historySucFee"/>
+        <id column="history_fail_fee" jdbcType="INTEGER" property="historyFailFee"/>
+        <id column="loans_long_time" jdbcType="INTEGER" property="loansLongTime"/>
+        <id column="loans_latest_time" jdbcType="TIMESTAMP" property="loansLatestTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+		id, user_id as userId, code, id_no as idNo, id_name as idName, versions,
+		loans_score as loansScore,
+		loans_credibility as loansCredibility,
+		loans_count as loansCount,
+		loans_settle_count as loansSettleCount,
+		loans_overdue_count as loansOverdueCount,
+		loans_org_count as loansOrgCount,
+		loans_cash_count as loansCashCount
+	</sql>
+
+    <select id="getPageData" resultType="com.free.decision.server.model.vo.XyActionRadarVO">
+        select
+        a.id, a.id_name as name, a.id_no as idNo, a.create_time as createTime,b.mobile
+        from decision_xy_action_radar a, decision_user b
+        where a.user_id = b.id and b.company_id = #{companyId}
+        <if test="startTime != null and startTime != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d ') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d ') &lt;= #{endTime}
+        </if>
+        <if test="name != null and name != ''">
+            and a.id_name like concat('%', #{name}, '%')
+        </if>
+        <if test="idNo != null and idNo != ''">
+            and a.id_no like concat('%', #{idNo}, '%')
+        </if>
+        <if test="mobile != null and mobile != ''">
+            and b.mobile like concat('%', #{mobile}, '%')
+        </if>
+        order by a.id desc
+    </select>
+
+    <select id="getReportById" resultType="com.free.decision.server.model.XyActionRadar">
+		select
+		a.id, a.user_id as userId, a.id_name as name, a.id_no as idNo, a.versions, b.mobile,a.create_time as createTime,
+		a.loans_score as loansScore, a.loans_credibility as loansCredibility, a.loans_count as loansCount,
+		a.consfin_org_count as consfinOrgCount, a.latest_one_month_fail as latestOneMonthFail,a.latest_one_month_suc as latestOneMonthSuc,
+		a.loans_settle_count as loansSettleCount, a.loans_overdue_count as loansOverdueCount, a.loans_org_count as loansOrgCount, a.loans_cash_count as loansCashCount,
+		a.latest_one_month as latestOneMonth, a.latest_three_month as latestThreeMonth, a.latest_six_month as latestSixMonth,
+		a.history_suc_fee as historySucFee, a.history_fail_fee as historyFailFee, a.loans_long_time as loansLongTime, a.loans_latest_time as loansLatestTime
+		from decision_xy_action_radar a
+		left join decision_user b
+		on b.id = a.user_id
+		where a.id = #{id} limit 1
+	</select>
+
+    <select id="getLastXyDecisionData" resultType="com.free.decision.server.model.vo.DecisionCreditReportVO">
+		select loans_overdue_count as loansOverdueCount,latest_one_month_fail as latestOneMonthFail,
+		  history_suc_fee as historySucFee,history_fail_fee as historyFailFee,latest_one_month_suc as latestOneMonthSuc,
+		  loans_score as loansScore,loans_credibility as loansCredibility,create_time as createTime ,loans_latest_time as loansLatestTime,
+          loans_count as loansCount,loans_settle_count as loansSettleCount ,latest_one_month as latestOneMonth
+          from decision_xy_action_radar where user_id = #{userId}
+		order by id desc limit 1
+	</select>
+
+    <insert id="insertRadar" parameterType="com.free.decision.server.model.XyActionRadarParam" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into decision_xy_action_radar (`code`, user_id,`id_no`, `id_name`, `versions`, loans_score, loans_credibility, loans_count, loans_settle_count,
+                                    loans_overdue_count, loans_org_count, consfin_org_count,loans_cash_count, latest_one_month,
+                                    latest_three_month, latest_six_month, history_suc_fee, history_fail_fee,latest_one_month_suc,latest_one_month_fail,
+                                    loans_long_time,loans_latest_time,create_time)
+
+                            values (#{code}, #{userId}, #{idNo}, #{idName},#{versions}, #{loansScore}, #{loansCredibility},
+                                   #{loansCount},#{loansSettleCount}, #{loansOverdueCount}, #{loansOrgCount}, #{consfinOrgCount},#{loansCashCount},
+                                   #{latestOneMonth}, #{latestThreeMonth}, #{latestSixMonth}, #{historySucFee},#{historyFailFee},#{latestOneMonthSuc},
+                                   #{latestOneMonthFail},#{loansLongTime},#{loansLatestTime},#{createTime})
+    </insert>
+
+    <!-- 插入行为雷达记录信息  -->
+    <insert id="insertRecord" parameterType="com.free.decision.server.model.XyRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into decision_xy_record (company_id,user_id,request_params,`type`,result,create_time)
+        values(#{companyId},#{userId},#{requestParams},#{type},#{result}, now())
+    </insert>
+
+    <!-- 查询行为雷达记录信息  -->
+    <select id="getXyRecord" resultType="java.lang.String">
+		select result from decision_xy_record where id = #{id}
+	</select>
+
+</mapper>

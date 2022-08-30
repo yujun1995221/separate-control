@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/decision-intf/decision-intf.iml" filepath="$PROJECT_DIR$/decision-intf/decision-intf.iml" />
+      <module fileurl="file://$PROJECT_DIR$/decision-pom/decision-pom.iml" filepath="$PROJECT_DIR$/decision-pom/decision-pom.iml" />
+      <module fileurl="file://$PROJECT_DIR$/decision-service/decision-service.iml" filepath="$PROJECT_DIR$/decision-service/decision-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/decision-web/decision-web.iml" filepath="$PROJECT_DIR$/decision-web/decision-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/风控.iml" filepath="$PROJECT_DIR$/.idea/风控.iml" />
+    </modules>
+  </component>
+</project>

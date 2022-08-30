@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.BldMapper">
+
+	<select id="loadBlackByPhoneAndType" resultType="com.free.decision.server.model.BldRecord">
+	  select result,create_time as createTime from decision_bld_record where phone = #{phone} and type = #{type} and (phone_hit_black = 1 or id_number_hit_black = 1) order by id desc limit 1
+	</select>
+
+	<insert id="insert" parameterType="com.free.decision.server.model.BldRecord">
+		insert into decision_bld_record (company_id, user_id, id_number, phone, name, phone_hit_black, id_number_hit_black, request_params, result, type, create_time)
+		values (#{companyId}, #{userId}, #{idNumber}, #{phone}, #{name}, #{phoneHitBlack}, #{idNumberHitBlack}, #{requestParams}, #{result}, #{type}, now())
+	</insert>
+</mapper>

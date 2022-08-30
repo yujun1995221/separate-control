@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.AliMapper">
+
+	<insert id="addAliFace" parameterType="com.free.decision.server.model.AliFace">
+		insert into decision_ali_face (company_id,biz_id,verify_token,result,create_time)
+		values (#{companyId}, #{bizId}, #{verifyToken}, #{result}, now())
+	</insert>
+
+	<update id="updateFaceByBizId">
+		update decision_ali_face set result = #{result},update_time = now() where biz_id = #{bizId}
+	</update>
+</mapper>

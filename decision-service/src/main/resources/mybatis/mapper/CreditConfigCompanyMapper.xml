@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.CreditConfigCompanyMapper">
+  <resultMap id="BaseResultMap" type="com.free.decision.server.model.CreditConfigCompany">
+    <id     column="id"                      jdbcType="BIGINT"    property="id" />
+    <result column="config_id"               jdbcType="BIGINT"    property="configId" />
+    <result column="company_id"              jdbcType="BIGINT"    property="companyId" />
+    <result column="status"                  jdbcType="INTEGER"   property="status" />
+    <result column="is_open"                 jdbcType="INTEGER"   property="isOpen" />
+    <result column="val"                     jdbcType="VARCHAR"   property="val" />
+    <result column="create_time"             jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time"             jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, config_id, company_id, `status`, is_open, val, create_time, update_time
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from decision_credit_config_company
+    where `status` = 1 and id = #{id} and company_id = #{companyId}
+  </select>
+
+  <select id="loadByConfigId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select <include refid="Base_Column_List" /> from decision_credit_config_company
+    where `status` = 1 and config_id = #{configId} and company_id = #{companyId}
+  </select>
+
+  <insert id="insert" parameterType="com.free.decision.server.model.CreditConfigCompany">
+    insert into decision_credit_config_company (config_id, company_id,status,is_open, val, create_time )
+    values (#{configId,jdbcType=BIGINT}, #{companyId,jdbcType=BIGINT},1, #{isOpen,jdbcType=INTEGER}, #{val,jdbcType=VARCHAR}, now() )
+  </insert>
+
+  <update id="updateByPrimaryKey" parameterType="com.free.decision.server.model.CreditConfigCompany">
+    update decision_credit_config_company set val = #{val,jdbcType=VARCHAR},update_time = now()
+    where config_id = #{configId} and `status` = 1 and company_id = #{companyId}
+  </update>
+
+  <!-- 修改开启/关闭状态 -->
+  <update id="updateOpenType">
+    update decision_credit_config_company set is_open =#{isOpen} where config_id =#{configId} and `status` = 1 and company_id =#{companyId}
+  </update>
+
+</mapper>

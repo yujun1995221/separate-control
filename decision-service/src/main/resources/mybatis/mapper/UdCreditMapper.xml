@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.UdCreditMapper">
+
+    <select id="getPageData" resultType="com.free.decision.server.model.vo.UdCreditUserInfoVO">
+        select
+        a.id, b.name as name, b.id as userId, b.company_id as companyId,
+        b.id_number as idNumber, b.mobile, a.create_time as createTime
+        from decision_ud_credit a , decision_user b
+        where a.user_id = b.id  and b.company_id =  #{companyId}
+        <if test="startTime != null and startTime != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d ') >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and DATE_FORMAT(a.create_time, '%Y-%m-%d ') &lt;= #{endTime}
+        </if>
+        <if test="name != null and name != ''">
+            and b.name like concat('%', #{name}, '%')
+        </if>
+        <if test="idNumber != null and idNumber != ''">
+            and b.id_number like concat('%', #{idNumber}, '%')
+        </if>
+        <if test="mobile != null and mobile != ''">
+            and b.mobile like concat('%', #{mobile}, '%')
+        </if>
+        order by a.id desc
+    </select>
+
+    <select id="loadInfoById" resultType="com.free.decision.server.model.UdCredit" parameterType="Long">
+     select a.id, a.id_number_mask as idNumberMask, a.name_credible as nameCredible,
+        a.gender, a.nation, a.birthday,a.address,
+         CONCAT(a.province,a.city) as birthPlace,a.create_time as createTime,
+         a.last_modified_time as lastModifiedTime,
+         a.issuing_agency as issuingAgency,
+         a.link_user_count as linkUserCount,
+         a.mobile_count as mobileCount,
+         a.other_link_device_count as otherLinkDeviceCount,
+         a.partner_mark_count as partnerMarkCount,
+         a.court_dishonest_count as courtDishonestCount,
+         a.online_dishonest_count as onlineDishonestCount,
+         a.living_attack_count as livingAttackCount,
+         a.user_have_bankcard_count as userHaveBankcardCount,
+         a.other_fraud_device_count as otherFraudDeviceCount,
+         a.other_living_attack_device_count as otherLivingAttackDeviceCount,
+         a.partner_user_count as partnerUserCount,
+         a.bankcard_count as bankcardCount,
+         a.fraud_device_count as fraudDeviceCount,
+         a.living_attack_device_count as livingAttackDeviceCount,
+         a.link_device_count as linkDeviceCount,
+         a.actual_loan_platform_count_1m as actualLoanPlatformCount1m ,
+         a.actual_loan_platform_count_3m as actualLoanPlatformCount3m,
+         a.actual_loan_platform_count_6m as actualLoanPlatformCount6m,
+         a.loan_platform_count_1m as loanPlatformCount1m,
+         a.loan_platform_count_3m as loanPlatformCount3m,
+         a.loan_platform_count_6m as loanPlatformCount6m,
+         a.repayment_platform_count_1m as repaymentPlatformCount1m,
+         a.repayment_platform_count_3m as repaymentPlatformCount3m,
+         a.repayment_platform_count_6m as repaymentPlatformCount6m,
+         a.loan_platform_count as loanPlatformCount,
+         a.actual_loan_platform_count as actualLoanPlatformCount,
+         a.repayment_platform_count as repaymentPlatformCount,
+         a.repayment_times_count as repaymentTimesCount,
+         a.score, a.risk_evaluation as riskEvaluation
+        from decision_ud_credit a  where id = #{id}
+    </select>
+
+    <select id="loadLoanIndustryById" resultType="com.free.decision.server.model.UdCreditLoanIndustry" parameterType="Long">
+        select
+        id, ud_credit_id as udCreditId, actual_loan_platform_count as actualLoanPlatformCount, name,
+        loan_platform_count as loanPlatformCount, repayment_times_count as repaymentTimesCount, repayment_platform_count as repaymentPlatformCount
+        from decision_ud_credit_loan_industry  where ud_credit_id = #{id}
+    </select>
+
+    <select id="loadDeviceById" resultType="com.free.decision.server.model.UdCreditDevices" parameterType="Long">
+        select
+        id, ud_credit_id as udCreditId, device_name as deviceName, device_id as deviceId,
+        device_last_use_date as deviceLastUseDate, device_link_id_count as deviceLinkIdCount,  cheats_device as cheatsDevice,
+        is_rooted as isRooted,  fraud_device as fraudDevice, is_using_proxy_port as isUsingProxyPort,
+        app_instalment_count as appInstalmentCount,  network_type as networkType, living_attack as livingAttack
+        from decision_ud_credit_devices where ud_credit_id = #{id}
+    </select>
+
+    <select id="loadUserFeatureInfo" resultType="com.free.decision.server.model.UdFeaturesDic" parameterType="Long">
+      select a.id, a.code, a.description, a.name
+	  from decision_ud_features_dic a ,decision_ud_credit_user_feature b
+	  where a.code = b.feature_type and  b.ud_credit_id =  #{id}
+    </select>
+
+    <select id="getUdFeaturesDic" resultType="com.free.decision.server.model.vo.UdUserFeatureDicVO" >
+        select code,name from decision_ud_features_dic
+    </select>
+
+    <select id="loadUserFeatureById" resultType="com.free.decision.server.model.UdCreditUserFeature" parameterType="Long">
+        select   id, ud_credit_id as udCreditId , feature_type as featureType, last_modified_date as lastModifiedDate
+        from  decision_ud_credit_user_feature  where  ud_credit_id = #{id}
+    </select>
+</mapper>

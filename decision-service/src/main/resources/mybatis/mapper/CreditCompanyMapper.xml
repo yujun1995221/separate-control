@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.free.decision.server.mapper.CreditCompanyMapper">
+
+	<resultMap id="baseMap" type="com.free.decision.server.model.CreditCompany">
+		<result column="id" property="id"/>
+		<result column="company_name" property="companyName"/>
+		<result column="mobile" property="mobile"/>
+		<result column="app_name" property="appName"/>
+		<result column="example_name" property="exampleName"/>
+		<result column="address" property="address"/>
+		<result column="back_address" property="backAddress"/>
+		<result column="front_address" property="frontAddress"/>
+		<result column="port" property="port"/>
+		<result column="user_name" property="userName"/>
+		<result column="password" property="password"/>
+		<result column="status" property="status"/>
+		<result column="init_status" property="initStatus"/>
+		<result column="create_time" property="createTime"/>
+		<result column="update_time" property="updateTime"/>
+	</resultMap>
+
+	<select id="loadAll" resultMap="baseMap">
+		select * from credit_company where status = 1
+	</select>
+</mapper>
